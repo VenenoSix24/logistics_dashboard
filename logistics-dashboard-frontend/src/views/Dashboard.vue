@@ -80,7 +80,6 @@
         </el-col>
       </el-row>
 
-      <!-- 新增KPI行 -->
       <el-row :gutter="20" class="kpi-row" style="margin-top: 20px;">
         <el-col :span="6">
           <el-card shadow="always" class="kpi-card">
@@ -308,7 +307,7 @@ const fetchData = async () => {
     ]);
     
     kpiData.value = dashboardRes.data.kpi_data;
-    chartData.value = dashboardRes.data.chart_data; // 恢复被误删的图表数据赋值
+    chartData.value = dashboardRes.data.chart_data;
     tableData.value = ordersRes.data.orders;
     totalOrders.value = ordersRes.data.total;
 
@@ -370,7 +369,7 @@ const handlePieChartClick = (params) => {
 };
 
 const handleSearch = () => {
-  currentPage.value = 1; 
+  currentPage.value = 1;
   fetchData();
 };
 
@@ -379,13 +378,13 @@ const resetFilters = () => {
   filterParams.source_province = '';
   filterParams.destination_province = '';
   filterParams.category_name = '';
-  handleSearch(); 
+  handleSearch();
 };
 
 // --- 生命周期钩子 ---
 onMounted(() => {
   fetchFilterOptions();
-  fetchData(); 
+  fetchData();
 });
 </script>
 

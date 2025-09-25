@@ -1,5 +1,3 @@
-# generate_domestic_data.py (Refactored for Realism)
-
 import pandas as pd
 from faker import Faker
 import random
@@ -13,9 +11,9 @@ def generate_logistics_data(num_records=10000):
     """
     fake = Faker('zh_CN')
 
-    # --- 1. 定义更丰富的、带权重的基础数据 ---
+    # --- 1. 基础数据 ---
 
-    # 1.1) 地域分布权重 (保持不变)
+    # 1.1) 地域分布权重
     provinces_cities = {
         '广东': (['深圳', '广州', '东莞', '佛山', '珠海', '中山', '惠州'], 0.18),
         '江苏': (['苏州', '南京', '无锡', '常州', '南通', '徐州', '扬州'], 0.14),
@@ -38,7 +36,7 @@ def generate_logistics_data(num_records=10000):
     provinces = list(provinces_cities.keys())
     province_weights = [v[1] for v in provinces_cities.values()]
 
-    # 1.2) 商品品类 (保持不变)
+    # 1.2) 商品品类
     categories = {
         '服装鞋帽': {'distribution_weight': 0.20, 'products': ["安踏运动鞋", "李宁卫衣", "波司登羽绒服", "优衣库T恤", "Nike Air Force 1", "Adidas Samba", "斯凯奇休闲鞋", "斐乐运动裤"], 'weight_range': (0.5, 3), 'price_range': (100, 2000), 'volume_range': (0.005, 0.02)},
         '电子产品': {'distribution_weight': 0.18, 'products': ["华为Mate 60 Pro", "小米14 Ultra", "大疆无人机Air 3", "联想小新Pro 16", "Apple iPhone 15 Pro", "小米手环8", "索尼PS5游戏机", "微软Xbox Series X", "佳能EOS R6相机"], 'weight_range': (0.2, 5), 'price_range': (500, 8000), 'volume_range': (0.001, 0.05)},
@@ -52,7 +50,7 @@ def generate_logistics_data(num_records=10000):
         '酒水饮料': {'distribution_weight': 0.02, 'products': ["茅台飞天", "五粮液", "拉菲红酒", "科罗娜啤酒", "农夫山泉矿泉水", "可口可乐整箱"], 'weight_range': (2, 25), 'price_range': (50, 2000), 'volume_range': (0.005, 0.08)}
     }
 
-    # 1.3) 【核心修改】定义承运商及其绩效，用于模拟更真实的履约率
+    # 1.3) 定义承运商及其绩效，用于模拟更真实的履约率
     carriers_performance = {
         '京东物流': {'on_time_rate': 0.96, 'avg_delay_days': 0.5},
         '顺丰速运': {'on_time_rate': 0.95, 'avg_delay_days': 0.7},
@@ -70,7 +68,7 @@ def generate_logistics_data(num_records=10000):
         '经济快递': {'ratio': 0.2, 'carriers': ['中通快递', '韵达快递', '申通快递', '百世快递'], 'cost_multiplier': 0.8}
     }
     
-    # 1.4) 车辆类型 (保持不变)
+    # 1.4) 车辆类型
     vehicles = {
         '面包车': {'capacity_kg': 500, 'volume_cbm': 3, 'fuel_consumption_L_per_100km': 8},
         '厢式货车': {'capacity_kg': 2000, 'volume_cbm': 10, 'fuel_consumption_L_per_100km': 15},
@@ -79,7 +77,7 @@ def generate_logistics_data(num_records=10000):
     }
     carbon_emission_factors = {'gasoline': 2.3} 
 
-    # 1.5) 时间分布 (保持不变)
+    # 1.5) 时间分布
     month_weights = [1.0, 1.0, 1.5, 1.2, 1.5, 2.5, 1.2, 1.2, 1.5, 2.0, 4.0, 2.0]
 
     data = []
@@ -92,7 +90,7 @@ def generate_logistics_data(num_records=10000):
         month = random.choices(range(1, 13), weights=month_weights, k=1)[0]
         day = random.randint(1, 28)
         # year = random.choice(range(current_year - 2, current_year + 1))
-        year = current_year - 1 # 【最终修复】将所有数据生成到去年，确保所有订单都有确定的交付日期
+        year = current_year - 1 # 将所有数据生成到去年，确保所有订单都有确定的交付日期
         order_date = datetime(year, month, day, random.randint(0, 23), random.randint(0, 59))
 
         mode_name = random.choices(list(shipping_modes.keys()), [v['ratio'] for v in shipping_modes.values()], k=1)[0]
@@ -113,7 +111,7 @@ def generate_logistics_data(num_records=10000):
         else:
             distance_km = random.randint(50, 500)
         
-        # 2.2) 【核心修改】重新设计计划与实际交付时间，模拟真实履约率
+        # 2.2) 模拟真实履约率
         # 计划送达时间：基于距离和运输模式给出一个较稳定的承诺
         base_days = 2 + (distance_km / 500) # 基础天数，大致认为500公里/天
         plan_transport_days = base_days * (2.0 - mode_info['cost_multiplier']) # 越贵的模式承诺越快
@@ -125,7 +123,7 @@ def generate_logistics_data(num_records=10000):
             # 准时：在计划时间附近小范围浮动
             actual_transport_days = plan_transport_days - random.uniform(0, carrier_info['avg_delay_days'])
         else:
-            # 延误：【最终修复】延误应该是在基础天数上增加，而不是在可能很小的计划天数上增加
+            # 延误：延误应该是在基础天数上增加，而不是在可能很小的计划天数上增加
             delay = np.random.exponential(scale=carrier_info['avg_delay_days'])
             actual_transport_days = base_days + delay
 
@@ -133,7 +131,7 @@ def generate_logistics_data(num_records=10000):
         actual_transport_days = max(0.1, actual_transport_days)
         delivery_date = shipping_date + timedelta(days=actual_transport_days)
 
-        # 2.3) 商品信息 (保持不变)
+        # 2.3) 商品信息
         category_names = list(categories.keys())
         category_weights = [categories[name]['distribution_weight'] for name in category_names]
         category_name = random.choices(category_names, weights=category_weights, k=1)[0]
@@ -146,7 +144,7 @@ def generate_logistics_data(num_records=10000):
         if month in [6, 11] and random.random() < 0.8:
             sales = round(sales * random.uniform(0.6, 0.95), 2)
         
-        # 2.4) 【核心修改】模拟车辆装载与成本，解决装载率和单位成本问题
+        # 2.4) 模拟车辆装载与成本，解决装载率和单位成本问题
         vehicle_type = random.choices(list(vehicles.keys()), [0.4, 0.4, 0.15, 0.05], k=1)[0]
         vehicle_info = vehicles[vehicle_type]
         vehicle_capacity_kg = vehicle_info['capacity_kg']
@@ -174,7 +172,7 @@ def generate_logistics_data(num_records=10000):
         total_cost = freight_cost + other_cost
         order_profit_per_order = round(sales - total_cost, 2)
 
-        # 2.5) 其他信息 (保持不变)
+        # 2.5) 其他信息
         if delivery_date > datetime.now():
             order_status = '运输中'
             logistics_track = "包裹已揽收"
@@ -189,7 +187,7 @@ def generate_logistics_data(num_records=10000):
         if order_status == '已签收':
             # 使用加权随机数生成更真实的评分，让高分更常见
             ratings = [1, 2, 3, 4, 5]
-            weights = [0.05, 0.05, 0.15, 0.40, 0.35] # 权重向4星和5星倾斜
+            weights = [0.05, 0.05, 0.15, 0.35, 0.4] # 权重向4星和5星倾斜
             customer_rating = random.choices(ratings, weights=weights, k=1)[0]
         else:
             customer_rating = None
@@ -225,7 +223,6 @@ def generate_logistics_data(num_records=10000):
             'actual_volume_cbm': actual_volume,
             'vehicle_type': vehicle_type,
             'vehicle_capacity_kg': vehicle_capacity_kg,
-            # 【核心修改】使用模拟出的合理指标
             'vehicle_loading_rate': round(simulated_vehicle_loading_rate, 4),
             'cost_per_kg': round(final_cost_per_kg, 2),
             'carbon_emission_kg': carbon_emission,
@@ -244,7 +241,7 @@ def generate_logistics_data(num_records=10000):
     # --- 3. 转换为DataFrame并进行最终处理 ---
     df = pd.DataFrame(data)
 
-    # 【核心修改】is_on_time 现在是最终的权威计算
+    # is_on_time 现在是最终的权威计算
     df['is_on_time'] = (pd.to_datetime(df['delivery_date']) <= pd.to_datetime(df['plan_delivery_date']))
 
     # 重命名字段以匹配旧版，如果需要的话

@@ -15,7 +15,7 @@ logistics_df = pd.read_csv(DATA_FILE)
 print(f"数据已成功预加载并处理完毕！共 {len(logistics_df)} 条记录。")
 
 
-# --- 1.5. 【新增】训练并加载预测模型 ---
+# --- 1.5. 训练并加载预测模型 ---
 prediction_model = None
 
 def train_prediction_model(df: pd.DataFrame) -> LinearRegression:
@@ -114,7 +114,7 @@ def get_dashboard_data(
     average_cost_per_kg = temp_df['cost_per_kg'].mean()
     total_carbon_emission = temp_df['carbon_emission_kg'].sum()
 
-    # --- 新增：财务与客户服务指标 ---
+    # --- 财务与客户服务指标 ---
     total_profit = temp_df['order_profit_per_order'].sum()
     avg_profit_per_order = temp_df['order_profit_per_order'].mean()
     cs_issue_rate = temp_df['has_cs_issue'].sum() / len(temp_df) if len(temp_df) > 0 else 0
@@ -165,7 +165,7 @@ def get_orders_data(
         "orders": paginated_data.to_dict(orient='records')
     }
 
-# --- 4. 【新增】预测API接口 ---
+# --- 4. 预测API接口 ---
 @app.get("/api/v1/predict")
 def predict_transport_time(distance_km: float = Query(..., gt=0)):
     """
